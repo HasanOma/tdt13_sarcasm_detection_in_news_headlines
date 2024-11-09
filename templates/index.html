@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sarcasm Detection</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Sarcasm Detection</h1>
+        <form method="post" class="headline-form">
+            <label for="headline">Enter a headline:</label><br>
+            <input type="text" id="headline" name="headline" required placeholder="Type your headline here..."><br><br>
+            <input type="submit" value="Detect Sarcasm">
+        </form>
+
+        {% if headline %}
+        <div class="result">
+            <h2>Results for: "{{ headline }}"</h2>
+            <div class="prediction">
+                <p><strong>Logistic Regression Prediction:</strong> {{ lr_prediction }} (Confidence: {{ lr_confidence }}%)</p>
+                <p><strong>LSTM Prediction:</strong> {{ lstm_prediction }} (Confidence: {{ lstm_confidence }}%)</p>
+                <p><strong>DistilBERT Prediction:</strong> {{ distilbert_prediction }} (Confidence: {{ distilbert_confidence }}%)</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
