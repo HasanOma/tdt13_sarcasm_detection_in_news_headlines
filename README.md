@@ -1,6 +1,8 @@
 # Sarcasm Detection in News Headlines
 
-**[▶ Try the live demo](https://hasanoma.github.io/tdt13_sarcasm_detection_in_news_headlines/)**. The logistic-regression model runs entirely in your browser, exported to JSON and evaluated in JavaScript, with identical predictions to the Python model.
+**[▶ Try the live demo](https://hasanoma.github.io/tdt13_sarcasm_detection_in_news_headlines/)**. All three models run in your browser and judge every headline side by side: the logistic regression instantly and exactly (identical predictions to the Python model), the BiLSTM with the exact repository weights via ONNX, and DistilBERT as an 8-bit quantized ONNX model with its WordPiece tokenizer and VADER sentiment feature ported exactly.
+
+Everything the demo needs lives in the `gh-pages/` folder, deployed by the workflow in `.github/workflows/pages.yml`. The rest of the repository is the original project. The DistilBERT weights were retrained in July 2026 with `sarcasmdetection.py` from this repo, since the fine-tuned checkpoint was never committed.
 
 This project explores sarcasm detection in news headlines using three different models:
 
