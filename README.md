@@ -1,6 +1,6 @@
 # Sarcasm Detection in News Headlines
 
-**[▶ Try the live demo](https://hasanoma.github.io/tdt13_sarcasm_detection_in_news_headlines/)** — the logistic-regression model runs entirely in your browser (exported to JSON, evaluated in JavaScript, identical predictions to the Python model).
+**[▶ Try the live demo](https://hasanoma.github.io/tdt13_sarcasm_detection_in_news_headlines/)**. The logistic-regression model runs entirely in your browser, exported to JSON and evaluated in JavaScript, with identical predictions to the Python model.
 
 This project explores sarcasm detection in news headlines using three different models:
 
