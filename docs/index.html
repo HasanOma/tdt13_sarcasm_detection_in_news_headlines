@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Headline Examiner — Sarcasm Detection in News Headlines</title>
+<meta name="description" content="Type any news headline and a machine-learning model judges — live in your browser — whether it reads as sarcasm or sincere news.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Newsreader:ital,opsz,wght@0,6..72,300..800;1,6..72,300..800&family=Libre+Franklin:wght@300;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f6f1e5;
+  --paper-deep:#efe7d4;
+  --ink:#191510;
+  --ink-soft:#4d443a;
+  --rule:#25201a;
+  --red:#a41623;
+  --blue:#1d4d7c;
+  --gold:#8a6d1d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Newsreader",Georgia,serif;
+  font-size:17px;line-height:1.55;
+  background-image:
+    radial-gradient(ellipse at 20% -10%, rgba(255,255,255,.65), transparent 55%),
+    radial-gradient(ellipse at 90% 110%, rgba(120,90,40,.10), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.sheet{max-width:1060px;margin:0 auto;padding:0 28px 90px}
+/* ---------- masthead ---------- */
+header{padding-top:34px;text-align:center}
+.dateline{
+  display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);
+  font-family:"Libre Franklin",sans-serif;font-size:11px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;padding:6px 2px;color:var(--ink-soft)
+}
+h1.masthead{
+  font-family:"UnifrakturMaguntia",serif;font-weight:400;
+  font-size:clamp(46px,8.5vw,92px);line-height:1.05;margin:18px 0 10px;
+  letter-spacing:.01em
+}
+.motto{
+  font-style:italic;font-size:15px;color:var(--ink-soft);margin-bottom:14px
+}
+.rules{border-top:3px double var(--rule);border-bottom:1px solid var(--rule);height:7px;margin-bottom:0}
+.kicker{
+  font-family:"Libre Franklin",sans-serif;text-transform:uppercase;
+  letter-spacing:.22em;font-size:12px;font-weight:700;margin:26px 0 6px;color:var(--red)
+}
+.deck{font-size:clamp(19px,2.6vw,25px);font-weight:500;max-width:760px;margin:0 auto 8px;text-wrap:balance}
+.byline{font-size:14px;font-style:italic;color:var(--ink-soft)}
+.byline a{color:inherit}
+/* ---------- desk (input area) ---------- */
+.desk{
+  margin:44px auto 0;max-width:860px;background:var(--paper-deep);
+  border:1px solid var(--rule);box-shadow:6px 6px 0 rgba(25,21,16,.85);
+  padding:30px clamp(18px,4vw,44px) 34px;position:relative
+}
+.desk::before{
+  content:"COPY DESK — SUBMIT A HEADLINE FOR REVIEW";
+  position:absolute;top:-11px;left:24px;background:var(--paper);
+  padding:0 12px;font-family:"Libre Franklin",sans-serif;font-size:11px;
+  font-weight:700;letter-spacing:.18em
+}
+.headline-input{
+  width:100%;background:transparent;border:none;border-bottom:2px solid var(--rule);
+  font-family:"Newsreader",serif;font-weight:700;
+  font-size:clamp(24px,4vw,36px);line-height:1.25;color:var(--ink);
+  padding:6px 2px 10px;min-height:56px;word-break:break-word;cursor:text
+}
+.headline-input:focus{outline:none;border-bottom-color:var(--red)}
+.headline-input:empty::before{content:attr(data-placeholder);color:#a2947d;font-weight:500;font-style:italic}
+.desk-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:18px}
+button.judge{
+  font-family:"Libre Franklin",sans-serif;font-weight:800;letter-spacing:.14em;
+  text-transform:uppercase;font-size:14px;color:var(--paper);
+  background:var(--ink);border:1px solid var(--ink);padding:13px 30px;cursor:pointer;
+  transition:transform .12s ease, box-shadow .12s ease;box-shadow:3px 3px 0 rgba(25,21,16,.35)
+}
+button.judge:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(25,21,16,.45)}
+button.judge:active{transform:translate(2px,2px);box-shadow:0 0 0 rgba(0,0,0,0)}
+.hint{font-size:13.5px;font-style:italic;color:var(--ink-soft)}
+/* samples */
+.wire{margin-top:22px}
+.wire-label{font-family:"Libre Franklin",sans-serif;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{
+  font-family:"Newsreader",serif;font-size:14px;font-style:italic;color:var(--ink);
+  background:transparent;border:1px solid #b9a988;border-radius:2px;
+  padding:6px 12px;cursor:pointer;transition:background .15s,border-color .15s
+}
+.chips button:hover{background:#fff8;border-color:var(--ink)}
+/* ---------- verdict ---------- */
+.verdict{max-width:860px;margin:0 auto;display:none;animation:drop .5s cubic-bezier(.2,1.4,.4,1) both}
+.verdict.show{display:block}
+@keyframes drop{from{opacity:0;transform:translateY(-14px) scale(.98)}to{opacity:1;transform:none}}
+.verdict-grid{display:grid;grid-template-columns:200px 1fr;gap:30px;align-items:center;padding:38px 6px 8px}
+@media(max-width:640px){.verdict-grid{grid-template-columns:1fr;justify-items:center;text-align:center}}
+.stamp{
+  justify-self:center;transform:rotate(-7deg);
+  border:5px solid currentColor;border-radius:8px;padding:10px 20px 8px;
+  font-family:"Libre Franklin",sans-serif;font-weight:800;letter-spacing:.16em;
+  text-transform:uppercase;font-size:clamp(22px,3vw,30px);line-height:1.1;text-align:center;
+  -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .92 .12'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+  mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .92 .12'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+  animation:slam .45s cubic-bezier(.3,1.6,.4,1) both .1s
+}
+@keyframes slam{from{opacity:0;transform:rotate(-7deg) scale(2.1)}to{opacity:1;transform:rotate(-7deg) scale(1)}}
+.stamp.sarcastic{color:var(--red)}
+.stamp.sincere{color:var(--blue)}
+.stamp small{display:block;font-size:12px;letter-spacing:.24em;font-weight:700;margin-top:4px}
+.meter-wrap{width:100%}
+.meter-labels{display:flex;justify-content:space-between;font-family:"Libre Franklin",sans-serif;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+.meter-labels .l-sin{color:var(--blue)} .meter-labels .l-sar{color:var(--red)}
+.meter{height:14px;border:1px solid var(--rule);background:repeating-linear-gradient(90deg,transparent 0 9px,rgba(25,21,16,.08) 9px 10px)}
+.meter-fill{height:100%;width:0;background:var(--blue);transition:width .7s cubic-bezier(.3,1,.3,1), background-color .3s}
+.meter-note{font-size:14px;font-style:italic;color:var(--ink-soft);margin-top:8px}
+/* annotated headline */
+.annotated{
+  margin:26px auto 0;padding:22px clamp(14px,3vw,30px);
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)
+}
+.annotated h3{font-family:"Libre Franklin",sans-serif;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:12px}
+.tokens{font-size:clamp(21px,3.2vw,30px);font-weight:600;line-height:1.6}
+.tok{padding:1px 3px;border-radius:2px;white-space:nowrap}
+.legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;font-family:"Libre Franklin",sans-serif;font-size:11.5px;letter-spacing:.05em;color:var(--ink-soft)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.swatch{width:13px;height:13px;border:1px solid var(--rule);display:inline-block}
+/* ---------- article / model card ---------- */
+.article{margin-top:70px;column-gap:44px}
+@media(min-width:760px){.article{columns:2}}
+.article h2{
+  font-size:26px;font-weight:700;column-span:all;margin-bottom:4px;
+  border-top:3px double var(--rule);padding-top:14px
+}
+.article .standfirst{column-span:all;font-style:italic;color:var(--ink-soft);margin-bottom:18px}
+.article p{margin-bottom:14px;text-align:justify;hyphens:auto}
+.article p:first-of-type::first-letter{
+  font-family:"UnifrakturMaguntia",serif;font-size:52px;float:left;
+  line-height:.82;padding:4px 8px 0 0
+}
+.models{margin-top:26px;border:1px solid var(--rule);break-inside:avoid}
+.models caption{
+  font-family:"Libre Franklin",sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;text-align:left;
+  padding:10px 14px;border-bottom:1px solid var(--rule);background:var(--paper-deep)
+}
+.models{width:100%;border-collapse:collapse}
+.models td,.models th{padding:9px 14px;font-size:14.5px;border-bottom:1px solid #cfc2a6;text-align:left;vertical-align:top}
+.models th{font-family:"Libre Franklin",sans-serif;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+.models tr:last-child td{border-bottom:none}
+.badge{font-family:"Libre Franklin",sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--paper);background:var(--red);padding:2px 7px;border-radius:2px;white-space:nowrap}
+/* ---------- footer ---------- */
+footer{
+  margin-top:70px;border-top:3px double var(--rule);padding-top:16px;
+  display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  font-family:"Libre Franklin",sans-serif;font-size:12px;letter-spacing:.06em;color:var(--ink-soft)
+}
+footer a{color:var(--ink);font-weight:600;text-decoration-color:var(--red)}
+.loading{font-style:italic;color:var(--ink-soft)}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="dateline">
+      <span>Trondheim, Norway</span>
+      <span>Machine-Learning Desk</span>
+      <span id="today">Edition No. 8192</span>
+    </div>
+    <h1 class="masthead">The Headline Examiner</h1>
+    <p class="motto">“All the news that's fit to doubt.” — Sarcasm detection in news headlines, judged live in your browser.</p>
+    <div class="rules"></div>
+    <p class="kicker">Interactive Demo · TDT13 NLP Project</p>
+    <p class="deck">Three models — Logistic Regression, a BiLSTM, and DistilBERT — trained to tell The Onion from real news.</p>
+    <p class="byline">By <a href="https://github.com/HasanOma">Hasan Omarzae</a> · trained on 23,000 headlines from The Onion &amp; HuffPost · <a href="https://github.com/HasanOma/tdt13_sarcasm_detection_in_news_headlines">source on GitHub</a></p>
+  </header>
+
+  <section class="desk">
+    <div class="headline-input" id="headline" contenteditable="plaintext-only" spellcheck="false" role="textbox" aria-label="News headline to judge"
+      data-placeholder="type a news headline, e.g. “scientists confirm sky still up there”"></div>
+    <div class="desk-row">
+      <button class="judge" id="judge">Run it past the editor</button>
+      <span class="hint" id="status">Model loading…</span>
+    </div>
+    <div class="wire">
+      <div class="wire-label">…or pull one from the wire</div>
+      <div class="chips" id="chips"></div>
+    </div>
+  </section>
+
+  <section class="verdict" id="verdict">
+    <div class="verdict-grid">
+      <div class="stamp" id="stamp">Sarcastic<small id="stampProb">98% sure</small></div>
+      <div class="meter-wrap">
+        <div class="meter-labels"><span class="l-sin">Sincere</span><span class="l-sar">Sarcastic</span></div>
+        <div class="meter"><div class="meter-fill" id="meterFill"></div></div>
+        <p class="meter-note" id="meterNote"></p>
+      </div>
+    </div>
+    <div class="annotated">
+      <h3>Marked-up copy — which words tipped the verdict</h3>
+      <p class="tokens" id="tokens"></p>
+      <div class="legend">
+        <span><span class="swatch" style="background:rgba(164,22,35,.35)"></span> pushes toward <b>&nbsp;sarcastic</b></span>
+        <span><span class="swatch" style="background:rgba(29,77,124,.30)"></span> pushes toward <b>&nbsp;sincere</b></span>
+        <span><span class="swatch" style="background:transparent"></span> not in the model's 8,192-word vocabulary</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="article">
+    <h2>How the editor makes up its mind</h2>
+    <p class="standfirst">A note on what is actually running on this page — no servers, no API calls, just mathematics in your browser.</p>
+    <p>The project compares three approaches to sarcasm detection, trained on the News Headlines Dataset for Sarcasm Detection (Misra &amp; Arora): headlines from <i>The Onion</i> labelled sarcastic, and from <i>HuffPost</i> labelled sincere.</p>
+    <p>This page runs the <b>logistic-regression baseline exactly</b> — the same 8,192 TF-IDF features and the same learned coefficients as the Python model in the repository, exported to JSON and evaluated in plain JavaScript. Its verdicts match the original model to machine precision, and it scores <b>84.6% accuracy</b> (F1 0.84) on the 4,600 held-out test headlines.</p>
+    <p>Because logistic regression is linear, its reasoning is inspectable: every word carries a signed weight, and the marked-up copy above shows each word's actual contribution to the verdict. Words like “area”, “man” or “report” lean Onion; policy and lifestyle vocabulary leans HuffPost.</p>
+    <p>The two neural models — a bidirectional LSTM and a fine-tuned DistilBERT with a VADER sentiment feature — are heavier and live in the repository's Flask app, which you can run locally by following the README.</p>
+    <table class="models">
+      <caption>The newsroom's three editors</caption>
+      <tr><th>Model</th><th>Features</th><th>Where it runs</th></tr>
+      <tr><td><b>Logistic Regression</b> <span class="badge">this demo</span></td><td>TF-IDF, 8,192 terms</td><td>Right here, in your browser — 84.6% test accuracy</td></tr>
+      <tr><td><b>BiLSTM</b></td><td>100-d embeddings, 2×128 hidden</td><td>Python / Flask app in the repo</td></tr>
+      <tr><td><b>DistilBERT</b></td><td>Fine-tuned transformer + VADER sentiment</td><td>Python / Flask app in the repo</td></tr>
+    </table>
+  </section>
+
+  <footer>
+    <span>© <span id="year"></span> Hasan Omarzae — <a href="https://github.com/HasanOma/tdt13_sarcasm_detection_in_news_headlines">HasanOma/tdt13_sarcasm_detection_in_news_headlines</a></span>
+    <span>Dataset: <a href="https://github.com/rishabhmisra/News-Headlines-Dataset-For-Sarcasm-Detection">Misra &amp; Arora</a> · The Onion / HuffPost</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+$("year").textContent=new Date().getFullYear();
+$("today").textContent=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+
+const SAMPLES=[
+ "study: all of your memories implanted in you 5 minutes ago when universe was created",
+ "how to be an effective listener",
+ "website's built-in search engine just pathetic",
+ "'sleeping on it' really does help you solve your problems",
+ "navy admiral thinks he's 'mr. important'",
+ "juul unveils sleek new e-smoker",
+ "why democrats don't need wall street",
+ "how to pick a lifestyle consistent with your passion"
+];
+
+let MODEL=null;
+fetch("model.json").then(r=>r.json()).then(m=>{
+  MODEL=m;
+  $("status").textContent="Model loaded — 8,192 features, ready.";
+}).catch(()=>{ $("status").textContent="Could not load model.json"; });
+
+// Mirrors sklearn: TfidfVectorizer(max_features=8192) defaults + LogisticRegression.
+// token_pattern (?u)\b\w\w+\b  ->  maximal runs of word chars, length >= 2
+const TOKEN_RE=/[\p{L}\p{N}_]{2,}/gu;
+function predict(text){
+  const counts=new Map();
+  for(const m of text.toLowerCase().matchAll(TOKEN_RE)){
+    const t=m[0];
+    if(MODEL.terms[t]) counts.set(t,(counts.get(t)||0)+1);
+  }
+  let norm=0;
+  for(const [t,c] of counts){ const v=c*MODEL.terms[t][0]; norm+=v*v; }
+  norm=Math.sqrt(norm);
+  let z=MODEL.intercept;
+  const contrib=new Map();           // per-term contribution to the logit
+  if(norm>0){
+    for(const [t,c] of counts){
+      const w=(c*MODEL.terms[t][0]/norm)*MODEL.terms[t][1];
+      contrib.set(t,w); z+=w;
+    }
+  }
+  return {p:1/(1+Math.exp(-z)), contrib};
+}
+
+function renderTokens(text,contrib){
+  const out=[]; let last=0;
+  const maxAbs=Math.max(0.4,...[...contrib.values()].map(Math.abs));
+  for(const m of text.matchAll(TOKEN_RE)){
+    if(m.index>last) out.push(esc(text.slice(last,m.index)));
+    const t=m[0].toLowerCase(), w=contrib.get(t);
+    if(w===undefined){ out.push('<span class="tok" style="color:#8d8272">'+esc(m[0])+'</span>'); }
+    else{
+      const a=Math.min(1,Math.abs(w)/maxAbs);
+      const bg=w>0?`rgba(164,22,35,${(.12+.5*a).toFixed(2)})`:`rgba(29,77,124,${(.10+.42*a).toFixed(2)})`;
+      out.push(`<span class="tok" style="background:${bg}" title="${w>0?"+":""}${w.toFixed(3)} to the sarcasm score">${esc(m[0])}</span>`);
+    }
+    last=m.index+m[0].length;
+  }
+  if(last<text.length) out.push(esc(text.slice(last)));
+  $("tokens").innerHTML=out.join("");
+}
+function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+function judge(){
+  if(!MODEL) return;
+  const text=$("headline").textContent.trim();
+  if(!text) return;
+  const {p,contrib}=predict(text);
+  const sarcastic=p>=0.5, pct=Math.round((sarcastic?p:1-p)*100);
+  const stamp=$("stamp");
+  stamp.className="stamp "+(sarcastic?"sarcastic":"sincere");
+  stamp.childNodes[0].textContent=sarcastic?"Sarcastic":"Sincere";
+  $("stampProb").textContent=pct+"% sure";
+  stamp.style.animation="none"; void stamp.offsetWidth; stamp.style.animation="";
+  $("meterFill").style.width=(p*100).toFixed(1)+"%";
+  $("meterFill").style.background=sarcastic?"var(--red)":"var(--blue)";
+  $("meterNote").textContent=`P(sarcastic) = ${(p*100).toFixed(1)}% — the same number the Python model in the repo would print.`;
+  renderTokens(text,contrib);
+  $("verdict").classList.add("show");
+  $("verdict").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+const ta=$("headline");
+ta.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();judge();}});
+$("judge").addEventListener("click",judge);
+
+const chips=$("chips");
+for(const s of SAMPLES){
+  const b=document.createElement("button");
+  b.textContent="“"+s+"”";
+  b.addEventListener("click",()=>{ta.textContent=s;judge();});
+  chips.appendChild(b);
+}
+</script>
+</body>
+</html>
